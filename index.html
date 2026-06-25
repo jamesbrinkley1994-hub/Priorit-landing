@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Priorit — Turn emails and requests into a clear task list</title>
+<meta name="description" content="Priorit helps production planners, project managers and operations teams turn emails and requests into one clear, prioritised task list." />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  :root {
+    --ink: #111318;
+    --soft: #4b5263;
+    --faint: #8b92a5;
+    --line: #e4e7ed;
+    --page: #ffffff;
+    --off: #f6f7f9;
+    --blue: #2563eb;
+    --blue-tint: #eff6ff;
+    --red: #dc2626;
+    --red-tint: #fef2f2;
+    --amber: #d97706;
+    --amber-tint: #fffbeb;
+    --green: #16a34a;
+    --purple: #7c3aed;
+    --purple-tint: #f5f3ff;
+  }
+
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+  .wrap-narrow { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+
+  nav {
+    border-bottom: 1px solid var(--line);
+    padding: 0 24px;
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(8px);
+  }
+  .nav-row {
+    max-width: 1040px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .wordmark { font-weight: 800; font-size: 18px; letter-spacing: -0.03em; color: var(--ink); text-decoration: none; }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .btn { display: inline-block; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; cursor: pointer; border: none; font-family: inherit; transition: all 0.15s; }
+  .btn-ghost { color: var(--soft); background: transparent; }
+  .btn-ghost:hover { color: var(--ink); background: var(--off); }
+  .btn-solid { color: #fff; background: var(--blue); }
+  .btn-solid:hover { background: #1d4ed8; }
+
+  .hero { padding: 72px 0 64px; border-bottom: 1px solid var(--line); }
+  .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+  @media (max-width: 840px) { .hero-inner { grid-template-columns: 1fr; gap: 40px; } }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 12px; font-weight: 600; color: var(--soft);
+    border: 1px solid var(--line); border-radius: 4px;
+    padding: 4px 10px; margin-bottom: 20px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  h1 {
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 800; line-height: 1.08;
+    letter-spacing: -0.025em; margin-bottom: 18px;
+  }
+  .hero-body { font-size: 17px; color: var(--soft); line-height: 1.65; margin-bottom: 28px; max-width: 440px; }
+  .hero-cta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .btn-hero { padding: 12px 24px; font-size: 15px; font-weight: 700; border-radius: 9px; }
+  .hero-sub { font-size: 13px; color: var(--faint); margin-top: 14px; }
+
+  .app-mock { background: var(--off); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .mock-topbar { background: var(--page); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+  .mock-topbar-title { font-weight: 800; font-size: 14px; letter-spacing: -0.02em; }
+  .mock-topbar-date { font-size: 11px; color: var(--faint); }
+  .mock-tabs { background: var(--page); border-bottom: 1px solid var(--line); padding: 0 16px; display: flex; }
+  .mock-tab { padding: 10px 14px; font-size: 12px; font-weight: 700; color: var(--faint); border-bottom: 2px solid transparent; }
+  .mock-tab.active { color: var(--ink); border-bottom-color: var(--blue); }
+  .mock-body { padding: 14px; }
+  .mock-snapshot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 12px; }
+  .mock-snap-cell { background: var(--page); border: 1px solid var(--line); border-radius: 9px; padding: 10px 8px; text-align: center; }
+  .mock-snap-cell .n { font-size: 18px; font-weight: 800; }
+  .mock-snap-cell .l { font-size: 9px; color: var(--soft); margin-top: 2px; line-height: 1.3; }
+  .mock-task-card { background: var(--page); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
+  .mock-task-card:last-child { margin-bottom: 0; }
+  .mock-task-header { display: flex; align-items: flex-start; gap: 10px; }
+  .mock-circle { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+  .mock-task-subject { font-size: 9.5px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 3px; }
+  .mock-task-text { font-size: 12px; font-weight: 600; line-height: 1.4; color: var(--ink); margin-bottom: 7px; }
+  .mock-pill-row { display: flex; gap: 5px; flex-wrap: wrap; }
+  .mock-pill { font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px; }
+
+  .proof-strip { padding: 22px 0; border-bottom: 1px solid var(--line); text-align: center; }
+  .proof-strip p { font-size: 13px; color: var(--faint); font-weight: 500; }
+
+  .section { padding: 72px 0; border-bottom: 1px solid var(--line); }
+  .section-label { font-size: 11.5px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px; }
+  h2 { font-size: clamp(24px, 3vw, 32px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 14px; }
+  .section-body { font-size: 16px; color: var(--soft); line-height: 1.65; max-width: 560px; }
+
+  .problem-list { margin-top: 40px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .problem-item { display: flex; align-items: flex-start; gap: 16px; padding: 20px 22px; border-bottom: 1px solid var(--line); background: var(--page); }
+  .problem-item:last-child { border-bottom: none; }
+  .problem-num { font-size: 11px; font-weight: 700; color: var(--faint); width: 20px; flex-shrink: 0; padding-top: 2px; }
+  .problem-content h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .problem-content p { font-size: 14px; color: var(--soft); line-height: 1.55; }
+
+  .steps-list { margin-top: 40px; }
+  .step-item { display: grid; grid-template-columns: 40px 1fr; gap: 16px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+  .step-item:last-child { border-bottom: none; }
+  .step-num-box { width: 32px; height: 32px; border-radius: 8px; background: var(--blue-tint); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+  .step-content h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .step-content p { font-size: 14px; color: var(--soft); line-height: 1.6; }
+
+  .features-table { margin-top: 40px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .feature-row-item { display: grid; grid-template-columns: 200px 1fr; border-bottom: 1px solid var(--line); background: var(--page); }
+  @media (max-width: 640px) { .feature-row-item { grid-template-columns: 1fr; } }
+  .feature-row-item:last-child { border-bottom: none; }
+  .feature-name { padding: 18px 20px; font-size: 14px; font-weight: 700; border-right: 1px solid var(--line); background: var(--off); }
+  @media (max-width: 640px) { .feature-name { border-right: none; border-bottom: 1px solid var(--line); } }
+  .feature-desc { padding: 18px 20px; font-size: 14px; color: var(--soft); line-height: 1.6; }
+
+  .who-list { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .who-list { grid-template-columns: 1fr; } }
+  .who-item { border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; background: var(--page); }
+  .who-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .who-item p { font-size: 13.5px; color: var(--soft); line-height: 1.55; }
+
+  .cta-section { padding: 80px 0; }
+  .cta-inner { border: 1px solid var(--line); border-radius: 14px; padding: 52px 44px; text-align: center; background: var(--off); }
+  @media (max-width: 640px) { .cta-inner { padding: 36px 24px; } }
+  .cta-inner h2 { margin-bottom: 12px; }
+  .cta-inner p { font-size: 16px; color: var(--soft); max-width: 480px; margin: 0 auto 28px; }
+  .cta-inner .btn-solid { font-size: 16px; padding: 14px 30px; border-radius: 10px; }
+  .cta-note { margin-top: 14px; font-size: 13px; color: var(--faint); }
+
+  footer { border-top: 1px solid var(--line); padding: 24px 0; }
+  .footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .footer-row p { font-size: 13px; color: var(--faint); }
+  .footer-row a { font-size: 13px; color: var(--faint); text-decoration: none; }
+  .footer-row a:hover { color: var(--ink); }
+
+  /* DEMO SECTION */
+  .demo-section { padding: 72px 0; border-bottom: 1px solid var(--line); background: var(--off); }
+  .demo-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: start; margin-top: 40px; }
+  @media (max-width: 760px) { .demo-grid { grid-template-columns: 1fr; } }
+
+  .demo-panel { background: var(--page); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .demo-panel-header { padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .demo-panel-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .demo-panel-label { font-size: 11px; font-weight: 700; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
+  .demo-panel-body { padding: 16px; }
+
+  .email-from { font-size: 11px; color: var(--faint); margin-bottom: 2px; }
+  .email-subject { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+  .email-text { font-size: 13px; color: var(--soft); line-height: 1.65; }
+
+  .arrow-col { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 60px; gap: 6px; }
+  @media (max-width: 760px) { .arrow-col { flex-direction: row; padding-top: 0; justify-content: center; } }
+  .arrow-line { width: 1px; height: 40px; background: var(--line); }
+  @media (max-width: 760px) { .arrow-line { width: 40px; height: 1px; } }
+  .arrow-head { font-size: 14px; color: var(--faint); }
+
+  .output-summary { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+  .output-summary-label { font-size: 9.5px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .output-summary-text { font-size: 12.5px; color: #14532d; line-height: 1.6; }
+
+  .output-task { background: var(--off); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start; }
+  .output-task:last-child { margin-bottom: 0; }
+  .output-task-check { width: 15px; height: 15px; border-radius: 50%; border: 2px solid; flex-shrink: 0; margin-top: 2px; }
+  .output-task-body { flex: 1; }
+  .output-task-subject { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--blue); margin-bottom: 3px; }
+  .output-task-text { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 6px; line-height: 1.4; }
+  .output-pill { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; display: inline-block; margin-right: 4px; }
+
+  ::selection { background: var(--blue); color: #fff; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-row">
+    <a class="wordmark" href="#">Priorit</a>
+    <div class="nav-right">
+      <a href="#how" class="btn btn-ghost">How it works</a>
+      <a href="https://priorit-coral.vercel.app?ref=landing" class="btn btn-solid">Try the beta</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-tag">Beta — Free to try</div>
+        <h1>Turn emails and requests into a clear, prioritised task list.</h1>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:7px 13px;font-size:13px;font-weight:700;color:#2563eb;">Paste email</div>
+          <div style="color:#8b92a5;font-size:14px;font-weight:600;">→</div>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:7px 13px;font-size:13px;font-weight:700;color:#16a34a;">Get tasks</div>
+          <div style="color:#8b92a5;font-size:14px;font-weight:600;">→</div>
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:7px;padding:7px 13px;font-size:13px;font-weight:700;color:#dc2626;">Prioritise work</div>
+        </div>
+        <p class="hero-body">If your day is driven by emails, follow-ups and requests from multiple directions, Priorit gives you one place to capture everything, see what matters most and track what you're waiting on.</p>
+        <div class="hero-cta">
+          <a href="https://priorit-coral.vercel.app?ref=landing" class="btn btn-solid btn-hero">Try the beta free</a>
+          <a href="#how" class="btn btn-ghost btn-hero">See how it works</a>
+        </div>
+        <p class="hero-sub">Built for production planners, project managers and operations teams.</p>
+      </div>
+
+      <div class="app-mock">
+        <div class="mock-topbar">
+          <div class="mock-topbar-title">Priorit</div>
+          <div class="mock-topbar-date">Wednesday 18 June</div>
+        </div>
+        <div class="mock-tabs">
+          <div class="mock-tab active">✅ Tasks</div>
+          
+        </div>
+        <div class="mock-body">
+          <div class="mock-snapshot">
+            <div class="mock-snap-cell" style="background:#eff6ff;"><div class="n" style="color:#2563eb;">6</div><div class="l">Active Tasks</div></div>
+            <div class="mock-snap-cell" style="background:#fef2f2;"><div class="n" style="color:#dc2626;">2</div><div class="l">High Priority</div></div>
+            <div class="mock-snap-cell" style="background:#f0fdf4;"><div class="n" style="color:#16a34a;">3</div><div class="l">Completed Today</div></div>
+          </div>
+          <div class="mock-task-card">
+            <div class="mock-task-header">
+              <div class="mock-circle" style="border:2px solid #dc2626;"></div>
+              <div style="flex:1;">
+                <div class="mock-task-subject">JOB 4471 — WELD BOOKING</div>
+                <div class="mock-task-text">Investigate why job 4471 won't book at weld despite materials showing available</div>
+                <div class="mock-pill-row">
+                  <span class="mock-pill" style="background:#fef2f2;color:#dc2626;">High</span>
+                  <span class="mock-pill" style="background:#fffbeb;color:#d97706;">📅 Due today</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mock-task-card">
+            <div class="mock-task-header">
+              <div class="mock-circle" style="border:2px solid #a78bfa;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:8px;">⏳</div>
+              <div style="flex:1;">
+                <div class="mock-task-subject">STEELCO DELIVERY</div>
+                <div class="mock-task-text">Chase Supplier Co for confirmed delivery date in writing</div>
+                <div class="mock-pill-row">
+                  <span class="mock-pill" style="background:#ede9fe;color:#7c3aed;">⏳ Waiting</span>
+                  <span class="mock-pill" style="background:#f5f3ff;color:#7c3aed;">🔔 20 Jun</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mock-task-card" style="opacity:0.5;">
+            <div class="mock-task-header">
+              <div class="mock-circle" style="background:#16a34a;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;">✓</div>
+              <div style="flex:1;">
+                <div class="mock-task-text" style="text-decoration:line-through;color:#8b92a5;">Reply to Jane re material sheet sizes and critical items</div>
+                <div class="mock-pill-row"><span class="mock-pill" style="background:#f0fdf4;color:#16a34a;">✓ Done</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="proof-strip">
+  <div class="wrap">
+    <p>Currently in beta · Free to try · No account required · Works in any browser</p>
+  </div>
+</div>
+
+<section class="demo-section" id="demo">
+  <div class="wrap-narrow">
+    <div class="section-label">See it in action</div>
+    <h2>Email in. Tasks out.</h2>
+    <p class="section-body">Paste any email and Priorit reads it, pulls out what you need to do, summarises the chain and drafts a reply — in seconds.</p>
+
+    <div class="demo-grid">
+
+      <!-- INPUT: EMAIL -->
+      <div class="demo-panel">
+        <div class="demo-panel-header">
+          <div class="demo-panel-dot" style="background:#ff5f57;"></div>
+          <div class="demo-panel-dot" style="background:#febc2e;"></div>
+          <div class="demo-panel-dot" style="background:#28c840;"></div>
+          <span class="demo-panel-label" style="margin-left:6px;">Input — Email</span>
+        </div>
+        <div class="demo-panel-body">
+          <div class="email-from">FROM: John Smith · Sent: Wednesday 18 June</div>
+          <div class="email-subject">RE: Job 4471 — won't book at weld</div>
+          <div class="email-text">
+            Hi Joe Bloggs,<br><br>
+            Could you have a look at the job below please? It won't let us book it at weld — it's saying materials not available but everything looks like it's there.<br><br>
+            Don't book it through if you figure it out though. It has to be a welder who is HPC trained that books it.<br><br>
+            Thanks<br>
+            John
+          </div>
+        </div>
+      </div>
+
+      <!-- ARROW -->
+      <div class="arrow-col">
+        <div class="arrow-line"></div>
+        <div class="arrow-head">↓</div>
+        <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:0.05em;writing-mode:vertical-rl;text-orientation:mixed;">Priorit</div>
+        <div class="arrow-head">↓</div>
+        <div class="arrow-line"></div>
+      </div>
+
+      <!-- OUTPUT: SUMMARY + TASKS -->
+      <div class="demo-panel">
+        <div class="demo-panel-header">
+          <div class="demo-panel-dot" style="background:#ff5f57;"></div>
+          <div class="demo-panel-dot" style="background:#febc2e;"></div>
+          <div class="demo-panel-dot" style="background:#28c840;"></div>
+          <span class="demo-panel-label" style="margin-left:6px;">Output — Summary &amp; Tasks</span>
+        </div>
+        <div class="demo-panel-body">
+
+          <div class="output-summary">
+            <div class="output-summary-label">Chain Summary</div>
+            <div class="output-summary-text">John has flagged that job 4471 won't book at weld despite materials appearing available. He needs it investigated but not booked through — only an HPC-trained welder can do that.</div>
+          </div>
+
+          <div class="output-task">
+            <div class="output-task-check" style="border-color:#dc2626;"></div>
+            <div class="output-task-body">
+              <div class="output-task-subject">JOB 4471 — WELD BOOKING</div>
+              <div class="output-task-text">Investigate why job 4471 won't book at weld despite materials showing as available</div>
+              <span class="output-pill" style="background:#fef2f2;color:#dc2626;">High</span>
+              <span class="output-pill" style="background:#eff6ff;color:#2563eb;">draft reply ↓</span>
+            </div>
+          </div>
+
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;margin-top:4px;">
+            <div style="font-size:9.5px;font-weight:700;color:#2563eb;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;">Draft Reply</div>
+            <div style="font-size:12px;color:#1e3a5f;line-height:1.6;">Looked into it now — the system has the materials flagged under the wrong sub-batch. Sorting it and will confirm once it's bookable. Won't book it through myself.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="section" id="problem">
+  <div class="wrap-narrow">
+    <div class="section-label">The problem</div>
+    <h2>Your work arrives from too many directions at once.</h2>
+    <p class="section-body">Emails, meetings, phone calls, people stopping by your desk. Each one creates an action — but there's no single place that holds all of it together.</p>
+    <div class="problem-list">
+      <div class="problem-item">
+        <div class="problem-num">01</div>
+        <div class="problem-content">
+          <h4>Actions get buried in email threads</h4>
+          <p>A request sent on Tuesday is invisible by Thursday, scrolled past and forgotten in a chain of twenty replies.</p>
+        </div>
+      </div>
+      <div class="problem-item">
+        <div class="problem-num">02</div>
+        <div class="problem-content">
+          <h4>Nothing tells you what to do first</h4>
+          <p>Without a way to separate high-impact actions from low ones, the loudest email wins — not the most important one.</p>
+        </div>
+      </div>
+      <div class="problem-item">
+        <div class="problem-num">03</div>
+        <div class="problem-content">
+          <h4>Follow-ups fall through the cracks</h4>
+          <p>You chase a supplier, they don't reply. Three days later you've forgotten you were waiting — and the job is at risk.</p>
+        </div>
+      </div>
+      <div class="problem-item">
+        <div class="problem-num">04</div>
+        <div class="problem-content">
+          <h4>You become the system</h4>
+          <p>Your brain ends up holding everything together — what's outstanding, what's waiting, what's overdue. That's not sustainable.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="wrap-narrow">
+    <div class="section-label">How it works</div>
+    <h2>Four steps. No setup required.</h2>
+    <p class="section-body">Priorit works on top of how you already operate. You don't change your inbox or your systems — you just stop having to hold everything in your head.</p>
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num-box">1</div>
+        <div class="step-content">
+          <h4>Tell Priorit what's important right now</h4>
+          <p>A machine that's down, a supplier that's unreliable, a job that can't be late. Add a note and Priorit factors it in every time it reads an email.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-box">2</div>
+        <div class="step-content">
+          <h4>Paste an email or request</h4>
+          <p>One message or a full thread. Priorit reads it and pulls out the specific actions that belong to you.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-box">3</div>
+        <div class="step-content">
+          <h4>Review your tasks and draft replies</h4>
+          <p>Each task comes with a priority level, a due date if one was mentioned, and a draft reply ready to check and send.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-box">4</div>
+        <div class="step-content">
+          <h4>Track, follow up and stay on top</h4>
+          <p>Mark tasks as waiting, set follow-up reminders, add notes — and see at a glance what's overdue, in progress and done.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="wrap-narrow">
+    <div class="section-label">What's included</div>
+    <h2>Built around how operational work actually happens.</h2>
+    <div class="features-table">
+      <div class="feature-row-item">
+        <div class="feature-name">Email task extraction</div>
+        <div class="feature-desc">Paste any email or thread. Priorit pulls out the actions that belong to you, written as clear first-person tasks.</div>
+      </div>
+      <div class="feature-row-item">
+        <div class="feature-name">Draft replies</div>
+        <div class="feature-desc">Every task comes with a suggested reply in plain language, addressed to the right person. Check it, adjust if needed, send.</div>
+      </div>
+      <div class="feature-row-item">
+        <div class="feature-name">Chain summaries</div>
+        <div class="feature-desc">A plain English summary of a full email thread so you understand the background without re-reading twenty messages.</div>
+      </div>
+      <div class="feature-row-item">
+        <div class="feature-name">Context Board</div>
+        <div class="feature-desc">Persistent notes on known issues and priorities that Priorit factors into every task it generates.</div>
+      </div>
+      <div class="feature-row-item">
+        <div class="feature-name">Waiting status</div>
+        <div class="feature-desc">Mark a task as waiting, note who it's on, and set a date to follow up. Priorit flags it when it's due.</div>
+      </div>
+      <div class="feature-row-item">
+        <div class="feature-name">Task aging</div>
+        <div class="feature-desc">See how long each task has been open. Tasks sitting untouched for five or more days are highlighted automatically.</div>
+      </div>
+
+      <div class="feature-row-item">
+        <div class="feature-name">Snapshot dashboard</div>
+        <div class="feature-desc">Active tasks, high priority items, overdue tasks and late purchase orders — visible the moment you open the app.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="who">
+  <div class="wrap-narrow">
+    <div class="section-label">Who it's for</div>
+    <h2>People whose day is driven by other people's requests.</h2>
+    <p class="section-body">Priorit is in beta and being tested by planners and operations professionals. If your inbox is part of your job rather than a distraction from it, this was built for you.</p>
+    <div class="who-list">
+      <div class="who-item">
+        <h4>Production planners</h4>
+        <p>Supplier delays, material shortages, job updates. Multiple chains in flight at once, all requiring a response or a follow-up.</p>
+      </div>
+      <div class="who-item">
+        <h4>Project managers</h4>
+        <p>Actions from meetings, updates from stakeholders, requests from the team — spread across email, calls and conversations.</p>
+      </div>
+      <div class="who-item">
+        <h4>Operations teams</h4>
+        <p>High volume of incoming requests with no clear system for sorting, prioritising and tracking what needs doing next.</p>
+      </div>
+      <div class="who-item">
+        <h4>Buyers and material planners</h4>
+        <p>Supplier correspondence, purchase order chasing and delivery tracking across multiple vendors at the same time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="cta">
+  <div class="wrap-narrow">
+    <div class="cta-inner">
+      <div class="section-label" style="margin-bottom:14px;">Currently in beta</div>
+      <h2>Try it on your real inbox.</h2>
+      <p>Paste an email you received today and see what Priorit extracts. No account, no setup, free to use.</p>
+      <a href="https://priorit-coral.vercel.app?ref=landing" class="btn btn-solid">Try the beta free</a>
+      <p class="cta-note">Feedback welcome — <a href="mailto:prioritbeta@gmail.com" style="color:inherit;">prioritbeta@gmail.com</a></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <p>© 2026 Priorit</p>
+    <a href="mailto:prioritbeta@gmail.com">prioritbeta@gmail.com</a>
+  </div>
+</footer>
+
+</body>
+</html>
